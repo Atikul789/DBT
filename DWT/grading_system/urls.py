@@ -26,6 +26,11 @@ urlpatterns = [
     path('assignedpuptillist/', AssignedPupilList.as_view(), name="assignedpupillist"),
     path('updateassignedpupil/<int:pk>/', AssignedPupilUpdate.as_view(), name="updateassignedpupil"),
     path('deleteassignedpupil/<int:pk>/', AssignedPupilDestroy.as_view(), name="deleteassignedpupil"),
+    path('getAllStudent',StudentList.as_view(), name="getAllStudent"),
+    path('getAllTeacher',TeacherList.as_view(),name="getAllTeacher"),
+    path('admindashboard',views.adminview, name="admindashboard"),
+    path('studentdashboard', StudentView.as_view(), name="studentdashboard"),
+    path('teacherdashboard', TeacherView.as_view(), name="teacherdashboard"),
     path('home', HomePageView.as_view(), name='home'),
 
 ]

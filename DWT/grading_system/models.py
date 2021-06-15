@@ -52,7 +52,7 @@ class Test(models.Model):
 
 
 class AssignedPupil(models.Model):
-    assign_id = models.IntegerField(blank=False, null=True)
+    assign_id = models.IntegerField(primary_key=True)
     class_id = models.ForeignKey(Class, on_delete=models.CASCADE)
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
 

@@ -13,6 +13,11 @@ from django.shortcuts import render
 from django.views.generic.base import TemplateView
 import hashlib
 from rest_framework.generics import *
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
+from django.views import View
+
+user = None
 
 
 class UserCreate(APIView):
@@ -44,13 +49,15 @@ class UserLogin(APIView):
     serializer_class = UserLoginSerializer
 
     def post(self, request, *args, **kwargs):
-        user_id = request.data.get('user_id', None)
+        user_name = request.data.get('user_name', None)
         str_password = request.data.get('password', None)
         password = hashlib.sha256(str_password.encode())
         password = password.hexdigest()
-        data = {'user_id': user_id, 'password': password}
+        data = {'user_name': user_name, 'password': password}
         serializer_class = UserLoginSerializer(data=data)
         if serializer_class.is_valid(raise_exception=True):
+            global user
+            user = User.objects.get(username=user_name)
             return Response(serializer_class.data, status=HTTP_200_OK)
         return Response(serializer_class.errors, status=HTTP_400_BAD_REQUEST)
 
@@ -66,9 +73,16 @@ class UserLogout(generics.GenericAPIView):
         return Response(serializer_class.errors, status=HTTP_400_BAD_REQUEST)
 
 
-class UserList(ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+class UserList(APIView):
+    def get(self, request, format=None):
+        global user
+        if user is None:
+            return Response({"Error": "User is not found"})
+        if user.user_type != "admin":
+            return Response({"Error": "User is not admin"})
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)
 
 
 class UserRetreive(RetrieveAPIView):
@@ -87,10 +101,12 @@ class UserDelete(APIView):
 
     def delete(self, request, pk):
         user_instance = User.objects.get(user_id=pk)
-        if str(user_instance.user_type) == "pupil" or str(user_instance.user_type) == "admin":
-            user_instance.delete()
-            return Response(status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_304_NOT_MODIFIED)
+        if str(user_instance.user_type) == "teacher":
+            subjects = Subject.objects.filter(user_id=user_instance.user_id, is_archieved=False)
+            if subjects:
+                return Response({"error": "teacher is already assigned to subject"})
+        user_instance.delete()
+        return Response(status=status.HTTP_200_OK)
 
 
 class ClassCreate(CreateAPIView):
@@ -98,9 +114,16 @@ class ClassCreate(CreateAPIView):
     serializer_class = ClassSerializer
 
 
-class ClassList(ListAPIView):
-    queryset = Class.objects.all()
-    serializer_class = ClassSerializer
+class ClassList(APIView):
+    def get(self, request, format=None):
+        global user
+        if user is None:
+            return Response({"Error": "User is not found"})
+        if user.user_type != "admin":
+            return Response({"Error": "User is not admin"})
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)
 
 
 class ClassUpdate(UpdateAPIView):
@@ -154,7 +177,7 @@ class TestDestroy(DestroyAPIView):
 
 
 class AssignedPupilCreate(CreateAPIView):
-    queryset = AssignedPupil.objects.all()
+    queryset = AssignedPupil.objects.filter()
     serializer_class = AssignedPupilSerializer
 
 
@@ -173,5 +196,27 @@ class AssignedPupilDestroy(DestroyAPIView):
     serializer_class = AssignedPupilSerializer
 
 
+class StudentList(ListAPIView):
+    queryset = User.objects.filter(user_type="pupil")
+    serializer_class = StudentSerializer
+
+
+class TeacherList(ListAPIView):
+    queryset = User.objects.filter(user_type="teacher")
+    serializer_class = TeacherSerializer
+
+
 class HomePageView(TemplateView):
     template_name = "home.html"
+
+
+def adminview(request):
+    return render(request, "admindashboard.html")
+
+
+class TeacherView(TemplateView, ):
+    template_name = "teacherdashboard.html"
+
+
+class StudentView(TemplateView):
+    template_name = "studentdashboard.html"

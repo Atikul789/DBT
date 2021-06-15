@@ -35,34 +35,34 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
 class UserLoginSerializer(serializers.ModelSerializer):
     # to accept either username or email
-    user_id = serializers.CharField()
+    user_name = serializers.CharField()
     password = serializers.CharField()
     token = serializers.CharField(required=False, read_only=True)
 
     def validate(self, data):
         # user,email,password validator
-        user_id = data.get("user_id", None)
+        user_name = data.get("user_name", None)
         password = data.get("password", None)
-        if not user_id and not password:
+        if not user_name and not password:
             raise ValidationError("Details not entered.")
         user = None
         # if the email has been passed
-        if '@' in user_id:
+        if '@' in user_name:
             user = User.objects.filter(
-                Q(email=user_id) &
+                Q(email=user_name) &
                 Q(password=password)
             ).distinct()
             if not user.exists():
                 raise ValidationError("User credentials are not correct.")
-            user = User.objects.get(email=user_id)
+            user = User.objects.get(email=user_name)
         else:
             user = User.objects.filter(
-                Q(username=user_id) &
+                Q(username=user_name) &
                 Q(password=password)
             ).distinct()
             if not user.exists():
                 raise ValidationError("User credentials are not correct.")
-            user = User.objects.get(username=user_id)
+            user = User.objects.get(username=user_name)
         if user.ifLogged:
             raise ValidationError("User already logged in.")
         user.ifLogged = True
@@ -74,7 +74,7 @@ class UserLoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'user_id',
+            'user_name',
             'password',
             'token',
         )
@@ -115,8 +115,17 @@ class UserLogoutSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'last_name', 'user_type']
+        fields = ['username', 'email', 'first_name', 'last_name']
 
+class StudentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name','user_type']
+
+class TeacherSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name','user_type']
 
 class ClassSerializer(serializers.ModelSerializer):
     class_name = serializers.CharField(
@@ -147,4 +156,4 @@ class TestSerializer(serializers.ModelSerializer):
 class AssignedPupilSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssignedPupil
-        fields = ['assign_id', 'class_id', 'user_id']
+        fields = ['class_id', 'user_id']
