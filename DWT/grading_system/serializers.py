@@ -117,15 +117,18 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['username', 'email', 'first_name', 'last_name']
 
+
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'last_name','user_type']
+        fields = ['username', 'email', 'first_name', 'last_name', 'user_type']
+
 
 class TeacherSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'last_name','user_type']
+        fields = ['username', 'email', 'first_name', 'last_name', 'user_type']
+
 
 class ClassSerializer(serializers.ModelSerializer):
     class_name = serializers.CharField(
@@ -150,10 +153,16 @@ class SubjectSerializer(serializers.ModelSerializer):
 class TestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Test
-        fields = ['test_name', 'marks', 'subject_id', 'user_id']
+        fields = ['test_name', 'subject_id', 'user_id']
 
 
 class AssignedPupilSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssignedPupil
         fields = ['class_id', 'user_id']
+
+
+class GradeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Grade
+        fields = ['test_id', 'user_id', 'mark']

@@ -131,9 +131,14 @@ class ClassUpdate(UpdateAPIView):
     serializer_class = ClassSerializer
 
 
-class ClassDestroy(DestroyAPIView):
+class ClassDestroy(APIView):
     queryset = Class.objects.all()
     serializer_class = ClassSerializer
+
+    def delete(self, request, pk):
+        class_instance = Class.objects.get(class_id=pk)
+        class_instance.delete()
+        return Response(status=status.HTTP_200_OK)
 
 
 class SubjectCreate(CreateAPIView):
@@ -162,8 +167,11 @@ class TestCreate(CreateAPIView):
 
 
 class TestList(ListAPIView):
-    queryset = Test.objects.all()
-    serializer_class = TestSerializer
+
+    def get(self, request, pk):
+        testlist = Test.objects.filter(subject_id=pk)
+        serializer = UserSerializer(testlist, many=True)
+        return Response(serializer.data)
 
 
 class TestUpdate(UpdateAPIView):
@@ -204,6 +212,26 @@ class StudentList(ListAPIView):
 class TeacherList(ListAPIView):
     queryset = User.objects.filter(user_type="teacher")
     serializer_class = TeacherSerializer
+
+
+class GradeCreate(CreateAPIView):
+    queryset = Grade.objects.all()
+    serializer_class = GradeSerializer
+
+
+class GradeList(ListAPIView):
+    queryset = Grade.objects.all()
+    serializer_class = TestSerializer
+
+
+class GradeUpdate(UpdateAPIView):
+    queryset = Grade.objects.all()
+    serializer_class = TestSerializer
+
+
+class GradeDestroy(DestroyAPIView):
+    queryset = Grade.objects.all()
+    serializer_class = TestSerializer
 
 
 class HomePageView(TemplateView):
