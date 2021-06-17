@@ -37,6 +37,7 @@ class UserLoginSerializer(serializers.ModelSerializer):
     # to accept either username or email
     user_name = serializers.CharField()
     password = serializers.CharField()
+    user_type = serializers.CharField(required=False,read_only=True)
     token = serializers.CharField(required=False, read_only=True)
 
     def validate(self, data):
@@ -67,7 +68,10 @@ class UserLoginSerializer(serializers.ModelSerializer):
             raise ValidationError("User already logged in.")
         user.ifLogged = True
         data['token'] = uuid4()
+        temp = User.objects.get(username=user_name)
+        data['user_type'] = temp.user_type
         user.token = data['token']
+        user.user_type = data['user_type']
         user.save()
         return data
 
@@ -76,11 +80,13 @@ class UserLoginSerializer(serializers.ModelSerializer):
         fields = (
             'user_name',
             'password',
+            'user_type',
             'token',
         )
 
         read_only_fields = (
             'token',
+            'user_type',
         )
 
 
@@ -118,13 +124,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['username', 'email', 'first_name', 'last_name']
 
 
-class StudentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'first_name', 'last_name', 'user_type']
-
-
-class TeacherSerializer(serializers.ModelSerializer):
+class UserSerializerWithType(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'email', 'first_name', 'last_name', 'user_type']
