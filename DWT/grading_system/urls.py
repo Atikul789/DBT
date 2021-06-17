@@ -32,6 +32,7 @@ urlpatterns = [
     path('grade-list/', GradeList.as_view(), name="grade-list"),
     path('update-grade/<int:pk>/', GradeUpdate.as_view(), name="update-grade"),
     path('delete-grade/<int:pk>/', GradeDestroy.as_view(), name="delete-grade"),
+    path('file-upload-csv', FileUploadAPIView.as_view(), name="file-upload-csv"),
     path('admindashboard', views.adminview, name="admindashboard"),
     path('studentdashboard', StudentView.as_view(), name="studentdashboard"),
     path('teacherdashboard', TeacherView.as_view(), name="teacherdashboard"),

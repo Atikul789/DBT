@@ -1,3 +1,5 @@
+import csv
+import io
 from django.shortcuts import redirect
 from rest_framework import generics
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
@@ -81,7 +83,7 @@ class UserList(APIView):
         if user.user_type != "admin":
             return Response({"Error": "User is not admin"})
         users = User.objects.all()
-        serializer = UserSerializer(users, many=True)
+        serializer = StudentSerializer(users, many=True)
         return Response(serializer.data)
 
 
@@ -232,6 +234,22 @@ class GradeUpdate(UpdateAPIView):
 class GradeDestroy(DestroyAPIView):
     queryset = Grade.objects.all()
     serializer_class = TestSerializer
+
+
+class FileUploadAPIView(generics.CreateAPIView):
+    serializer_class = FileUploadSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        file = serializer.validated_data['file']
+        decoded_file = file.read().decode()
+        # upload_products_csv.delay(decoded_file, request.user.pk)
+        io_string = io.StringIO(decoded_file)
+        reader = csv.reader(io_string)
+        for row in reader:
+            print(row)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class HomePageView(TemplateView):
