@@ -37,7 +37,7 @@ class UserLoginSerializer(serializers.ModelSerializer):
     # to accept either username or email
     user_name = serializers.CharField()
     password = serializers.CharField()
-    user_type = serializers.CharField(required=False,read_only=True)
+    user_type = serializers.CharField(required=False, read_only=True)
     token = serializers.CharField(required=False, read_only=True)
 
     def validate(self, data):
@@ -127,7 +127,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UserSerializerWithType(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'last_name', 'user_type']
+        fields = ['user_id','username', 'email', 'first_name', 'last_name', 'user_type']
 
 
 class ClassSerializer(serializers.ModelSerializer):

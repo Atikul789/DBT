@@ -19,7 +19,18 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.views import View
 from django.core import serializers
+
 user = None
+
+
+def archive_subject(subject_id):
+    tests = Test.objects.filter(subject_id=subject_id)
+    if tests:
+        subject = Subject.objects.get(subject_id=subject_id)
+        subject.is_archieved = True
+        subject.save()
+        return True
+    return False
 
 
 class UserCreate(APIView):
@@ -97,7 +108,7 @@ class UserUpdate(UpdateAPIView):
     serializer_class = UserSerializer
 
 
-class UserDelete(APIView):
+class UserDestroy(APIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -107,6 +118,10 @@ class UserDelete(APIView):
             subjects = Subject.objects.filter(user_id=user_instance.user_id, is_archieved=False)
             if subjects:
                 return Response({"error": "teacher is already assigned to subject"})
+        if str(user_instance.user_type) == "pupil":
+            test_results = Grade.objects.filter(user_id=user_instance.user_id)
+            for test_result in test_results:
+                test_result.delete()
         user_instance.delete()
         return Response(status=status.HTTP_200_OK)
 
@@ -138,9 +153,17 @@ class ClassDestroy(APIView):
     serializer_class = ClassSerializer
 
     def delete(self, request, pk):
-        class_instance = Class.objects.get(class_id=pk)
-        class_instance.delete()
-        return Response(status=status.HTTP_200_OK)
+        assigned_pupils = AssignedPupil.objects.filter(class_id=pk)
+        for assigned_pupil in assigned_pupils:
+            assigned_pupil.delete()
+        subjects = Subject.objects.filter(class_id=pk)
+        for subject in subjects:
+            if not archive_subject(subject.subject_id):
+                subject = subjects.objects.get(subject_id=subject.subject_id)
+                subject.delete()
+        clas = Class.objects.get(class_id=pk)
+        clas.delete()
+        return Response({"Success": "Class deleted successfully"}, status=status.HTTP_200_OK)
 
 
 class SubjectCreate(CreateAPIView):
@@ -158,9 +181,28 @@ class SubjectUpdate(UpdateAPIView):
     serializer_class = SubjectSerializer
 
 
-class SubjectDestroy(DestroyAPIView):
+class SubjectDestroy(APIView):
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
+
+    def delete(self, request, pk):
+        tests = Test.objects.filter(subject_id=pk)
+        if tests:
+            return Response({"Error": "Subject has dependent test"})
+        subject_instance = Subject.objects.get(subject_id=pk)
+        subject_instance.delete()
+        return Response({"Success": "Subject successfully deleted"})
+
+
+class ArchiveSubject(APIView):
+    queryset = Subject.objects.all()
+    serializer_class = SubjectSerializer
+
+    def post(self, request, pk):
+        if archive_subject(pk):
+            return Response({"Success": "Subject successfully archived"})
+        else:
+            return Response({"Error": "Subject can not be archived"})
 
 
 class TestCreate(CreateAPIView):
@@ -223,17 +265,45 @@ class GradeCreate(CreateAPIView):
 
 class GradeList(ListAPIView):
     queryset = Grade.objects.all()
-    serializer_class = TestSerializer
+    serializer_class = GradeSerializer
+
+
+class GradeListByPupilId(APIView): # need to add the url
+    queryset = Grade.objects.all()
+    serializer_class = GradeSerializer
+
+    def get(self, request, pk):
+        grades = Grade.objects.all(user_id=pk)
+        serializer = GradeSerializer(grades, many=True)
+        return Response(serializer.data)
+
+class GradeListByTestId(APIView): # need to add the url
+    queryset = Grade.objects.all()
+    serializer_class = GradeSerializer
+
+    def get(self, request, pk):
+        grades = Grade.objects.all(test_id=pk)
+        serializer = GradeSerializer(grades, many=True)
+        return Response(serializer.data)
+
+class GradeListByUserIdAndTestId(APIView): # send two pk and add the url
+    queryset = Grade.objects.all()
+    serializer_class = GradeSerializer
+
+    def get(self, request, user_id,test_id):
+        grades = Grade.objects.all(test_id=test_id, user_id=user_id )
+        serializer = GradeSerializer(grades, many=True)
+        return Response(serializer.data)
 
 
 class GradeUpdate(UpdateAPIView):
     queryset = Grade.objects.all()
-    serializer_class = TestSerializer
+    serializer_class = GradeSerializer
 
 
 class GradeDestroy(DestroyAPIView):
     queryset = Grade.objects.all()
-    serializer_class = TestSerializer
+    serializer_class = GradeSerializer
 
 
 class FileUploadAPIView(generics.CreateAPIView):
@@ -254,15 +324,3 @@ class FileUploadAPIView(generics.CreateAPIView):
 
 class HomePageView(TemplateView):
     template_name = "home.html"
-
-
-def adminview(request):
-    return render(request, "admindashboard.html")
-
-
-class TeacherView(TemplateView, ):
-    template_name = "teacherdashboard.html"
-
-
-class StudentView(TemplateView):
-    template_name = "studentdashboard.html"

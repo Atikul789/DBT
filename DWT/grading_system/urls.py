@@ -9,7 +9,7 @@ urlpatterns = [
     path('user-list/', UserList.as_view(), name="user-list"),  # get method to get all the user
     path('get-user/<int:pk>/', UserRetreive.as_view(), name="get-user"),
     path('update-user/<int:pk>/', UserUpdate.as_view(), name="update-user"),  # update the user by id
-    path('delete-user/<int:pk>/', UserDelete.as_view(), name="delete-user"),  # delete the user by id
+    path('delete-user/<int:pk>/', UserDestroy.as_view(), name="delete-user"),  # delete the user by id
     path('add-class/', ClassCreate.as_view(), name="add-class"),
     path('class-list/', ClassList.as_view(), name="class-list"),
     path('update-class/<int:pk>/', ClassUpdate.as_view(), name="update-class"),
@@ -18,6 +18,7 @@ urlpatterns = [
     path('subject-list/', SubjectList.as_view(), name="subject-list"),
     path('update-subject/<int:pk>/', SubjectUpdate.as_view(), name="update-subject"),
     path('delete-subject/<int:pk>/', SubjectDestroy.as_view(), name="delete-subject"),
+    path('archive-subject/<int:pk>/', ArchiveSubject.as_view(), name="archive-subject"),
     path('add-test/', TestCreate.as_view(), name="add-test"),
     path('test-list/', TestList.as_view(), name="test-list"),
     path('update-test/<int:pk>/', TestUpdate.as_view(), name="update-test"),
@@ -33,9 +34,10 @@ urlpatterns = [
     path('update-grade/<int:pk>/', GradeUpdate.as_view(), name="update-grade"),
     path('delete-grade/<int:pk>/', GradeDestroy.as_view(), name="delete-grade"),
     path('file-upload-csv', FileUploadAPIView.as_view(), name="file-upload-csv"),
-    path('admindashboard', views.adminview, name="admindashboard"),
-    path('studentdashboard', StudentView.as_view(), name="studentdashboard"),
-    path('teacherdashboard', TeacherView.as_view(), name="teacherdashboard"),
+    path('grade-list-by-pupil-id/<int:pk>/', GradeListByPupilId.as_view(), name="grade-list-by-pupil-id"),
+    path('grade-list-by-test-id/<int:pk>/', GradeListByTestId.as_view(), name="grade-list-by-test-id"),
+    path('grade-list-by-user-id-and-test-id/user-id/<int:user_id>/test-id/<int:test_id>/',
+         GradeListByUserIdAndTestId.as_view()),
     path('home', HomePageView.as_view(), name='home'),
 
 ]
