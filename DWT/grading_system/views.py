@@ -18,7 +18,7 @@ from rest_framework.generics import *
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.views import View
-
+from django.core import serializers
 user = None
 
 
@@ -83,7 +83,7 @@ class UserList(APIView):
         if user.user_type != "admin":
             return Response({"Error": "User is not admin"})
         users = User.objects.all()
-        serializer = StudentSerializer(users, many=True)
+        serializer = UserSerializerWithType(users, many=True)
         return Response(serializer.data)
 
 
@@ -208,12 +208,12 @@ class AssignedPupilDestroy(DestroyAPIView):
 
 class StudentList(ListAPIView):
     queryset = User.objects.filter(user_type="pupil")
-    serializer_class = StudentSerializer
+    serializer_class = UserSerializerWithType
 
 
 class TeacherList(ListAPIView):
     queryset = User.objects.filter(user_type="teacher")
-    serializer_class = TeacherSerializer
+    serializer_class = UserSerializerWithType
 
 
 class GradeCreate(CreateAPIView):
