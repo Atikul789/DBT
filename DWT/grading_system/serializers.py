@@ -138,7 +138,7 @@ class ClassSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Class
-        fields = ['class_name']
+        fields = ['class_id','class_name']
 
 
 class SubjectSerializer(serializers.ModelSerializer):
@@ -147,7 +147,7 @@ class SubjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Subject
-        fields = ['subject_name', 'user_id', 'class_id', 'is_archieved']
+        fields = ['subject_id','subject_name', 'user_id', 'class_id', 'is_archieved']
 
 
 class TestSerializer(serializers.ModelSerializer):

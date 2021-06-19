@@ -138,8 +138,8 @@ class ClassList(APIView):
             return Response({"Error": "User is not found"})
         if user.user_type != "admin":
             return Response({"Error": "User is not admin"})
-        users = User.objects.all()
-        serializer = UserSerializer(users, many=True)
+        clas = Class.objects.all()
+        serializer = UserSerializer(clas, many=True)
         return Response(serializer.data)
 
 
