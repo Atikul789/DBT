@@ -223,9 +223,18 @@ class TestUpdate(UpdateAPIView):
     serializer_class = TestSerializer
 
 
-class TestDestroy(DestroyAPIView):
+class TestDestroy(APIView):
     queryset = Test.objects.all()
     serializer_class = TestSerializer
+
+    def delete(self, request, pk):
+        grades = Grade.objects.filter(test_id=pk)
+        if grades:
+            for grade in grades:
+                grade.delete()
+        test = Test.objects.get(test_id=pk)
+        test.delete()
+        return Response({"Success": "Test successfully deleted"})
 
 
 class AssignedPupilCreate(CreateAPIView):
@@ -236,6 +245,31 @@ class AssignedPupilCreate(CreateAPIView):
 class AssignedPupilList(ListAPIView):
     queryset = AssignedPupil.objects.all()
     serializer_class = AssignedPupilSerializer
+
+
+"""class AssignedSubjectsAndGradesByUserId(APIView):
+
+    def get(self, request, pk):
+        clas = AssignedPupil.objects.get(user_id=pk)
+        subjects = Subject.objects.filter(subject_id=clas.subject_id)
+        list knf
+        for subject in subjects:
+            tests = Test.objects.filter(subject_id=subject.subject_id, user_id=pk)
+            totalMarks = 0
+            for test in tests:
+                grade = Grade.objects.get(test_id=test.test_id)
+                totalMarks += grade.mark
+            avgGrade = totalMarks / len(tests)
+            # subjectid, subject name and avg grade
+        serializer = UserSerializerWithType(users, many=True)
+        return Response(serializer.data) #need to complete """
+
+"""class TestsandGradesBySubjectId(APIView):
+    def get(self, request,user_id, subject_id):
+        tests = Test.objects.filter(subject_id=subject_id, user_id=user_id )
+        for test in tests:
+            grade = Grade.objects.get(test_id=test.test_id)
+            # test id, test name,  test date, grade marks """
 
 
 class AssignedPupilUpdate(UpdateAPIView):
@@ -268,7 +302,7 @@ class GradeList(ListAPIView):
     serializer_class = GradeSerializer
 
 
-class GradeListByPupilId(APIView): # need to add the url
+class GradeListByPupilId(APIView):  # need to add the url
     queryset = Grade.objects.all()
     serializer_class = GradeSerializer
 
@@ -277,7 +311,8 @@ class GradeListByPupilId(APIView): # need to add the url
         serializer = GradeSerializer(grades, many=True)
         return Response(serializer.data)
 
-class GradeListByTestId(APIView): # need to add the url
+
+class GradeListByTestId(APIView):  # need to add the url
     queryset = Grade.objects.all()
     serializer_class = GradeSerializer
 
@@ -286,12 +321,13 @@ class GradeListByTestId(APIView): # need to add the url
         serializer = GradeSerializer(grades, many=True)
         return Response(serializer.data)
 
-class GradeListByUserIdAndTestId(APIView): # send two pk and add the url
+
+class GradeListByUserIdAndTestId(APIView):  # send two pk and add the url
     queryset = Grade.objects.all()
     serializer_class = GradeSerializer
 
-    def get(self, request, user_id,test_id):
-        grades = Grade.objects.all(test_id=test_id, user_id=user_id )
+    def get(self, request, user_id, test_id):
+        grades = Grade.objects.all(test_id=test_id, user_id=user_id)
         serializer = GradeSerializer(grades, many=True)
         return Response(serializer.data)
 
