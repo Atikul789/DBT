@@ -38,6 +38,9 @@ urlpatterns = [
     path('grade-list-by-test-id/<int:pk>/', GradeListByTestId.as_view(), name="grade-list-by-test-id"),
     path('grade-list-by-user-id-and-test-id/user-id/<int:user_id>/test-id/<int:test_id>/',
          GradeListByUserIdAndTestId.as_view()),
+    path('assigned-subject-and-grade-by-user-id/<int:pk>', AssignedSubjectsAndGradesByUserId.as_view(), ),
+    path('test-and-grade-by-subject-id/user_id/<int:user_id>/subject_id/<int:subject_id>/',
+         TestsandGradesBySubjectId.as_view()),
     path('home', HomePageView.as_view(), name='home'),
 
 ]

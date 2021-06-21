@@ -19,6 +19,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.views import View
 from django.core import serializers
+import json
 
 user = None
 
@@ -247,12 +248,13 @@ class AssignedPupilList(ListAPIView):
     serializer_class = AssignedPupilSerializer
 
 
-"""class AssignedSubjectsAndGradesByUserId(APIView):
+class AssignedSubjectsAndGradesByUserId(APIView):
 
     def get(self, request, pk):
         clas = AssignedPupil.objects.get(user_id=pk)
         subjects = Subject.objects.filter(subject_id=clas.subject_id)
-        list knf
+        dicts = {}
+        count = 0
         for subject in subjects:
             tests = Test.objects.filter(subject_id=subject.subject_id, user_id=pk)
             totalMarks = 0
@@ -261,15 +263,28 @@ class AssignedPupilList(ListAPIView):
                 totalMarks += grade.mark
             avgGrade = totalMarks / len(tests)
             # subjectid, subject name and avg grade
-        serializer = UserSerializerWithType(users, many=True)
-        return Response(serializer.data) #need to complete """
+            dictionary = {"subject_id": subject.subject_id, "subject_name": subject.subject_name,
+                          "average_grade": avgGrade}
+            dicts.update({count: dictionary})
+            count = count + 1
+        return Response(json.dumps(dicts))
 
-"""class TestsandGradesBySubjectId(APIView):
-    def get(self, request,user_id, subject_id):
-        tests = Test.objects.filter(subject_id=subject_id, user_id=user_id )
+
+# hours = request.GET.get('hours', '')
+class TestsandGradesBySubjectId(APIView):
+    def get(self, request):
+        subject_id = request.GET.get('subject_id', None)
+        user_id = request.GET.get('user_id', None)
+        tests = Test.objects.filter(subject_id=subject_id, user_id=user_id)
+        dicts = {}
+        count = 0
         for test in tests:
             grade = Grade.objects.get(test_id=test.test_id)
+            dictionary = {"test_id": test.test_id, "test_date": test.date, "grade_marks": grade.mark}
             # test id, test name,  test date, grade marks """
+            dicts.update({count: dictionary})
+            count = count + 1
+        return Response(json.dumps(dicts))
 
 
 class AssignedPupilUpdate(UpdateAPIView):
@@ -326,7 +341,9 @@ class GradeListByUserIdAndTestId(APIView):  # send two pk and add the url
     queryset = Grade.objects.all()
     serializer_class = GradeSerializer
 
-    def get(self, request, user_id, test_id):
+    def get(self, request):
+        user_id = request.GET.get('user_id', None)
+        test_id = request.GET.get('test_id', None)
         grades = Grade.objects.all(test_id=test_id, user_id=user_id)
         serializer = GradeSerializer(grades, many=True)
         return Response(serializer.data)
