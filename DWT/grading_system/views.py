@@ -272,9 +272,10 @@ class AssignedSubjectsAndGradesByUserId(APIView):
 
 # hours = request.GET.get('hours', '')
 class TestsandGradesBySubjectId(APIView):
-    def get(self, request):
-        subject_id = request.GET.get('subject_id', None)
-        user_id = request.GET.get('user_id', None)
+    def get(self, request, *args, **kwargs):
+        subject_id = kwargs.get('subject_id', None)
+        user_id = kwargs.get('user_id', None)
+        print(subject_id)
         tests = Test.objects.filter(subject_id=subject_id, user_id=user_id)
         dicts = {}
         count = 0
@@ -341,9 +342,9 @@ class GradeListByUserIdAndTestId(APIView):  # send two pk and add the url
     queryset = Grade.objects.all()
     serializer_class = GradeSerializer
 
-    def get(self, request):
-        user_id = request.GET.get('user_id', None)
-        test_id = request.GET.get('test_id', None)
+    def get(self, request, *args, **kwargs):
+        user_id = kwargs.get('user_id', None)
+        test_id = kwargs.get('test_id', None)
         grades = Grade.objects.all(test_id=test_id, user_id=user_id)
         serializer = GradeSerializer(grades, many=True)
         return Response(serializer.data)
