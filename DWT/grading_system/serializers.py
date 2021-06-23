@@ -70,8 +70,10 @@ class UserLoginSerializer(serializers.ModelSerializer):
         data['token'] = uuid4()
         temp = User.objects.get(username=user_name)
         data['user_type'] = temp.user_type
+        data['user_id'] = temp.user_id
         user.token = data['token']
         user.user_type = data['user_type']
+        user.user_id = data['user_id']
         user.save()
         return data
 
@@ -82,6 +84,7 @@ class UserLoginSerializer(serializers.ModelSerializer):
             'password',
             'user_type',
             'token',
+            'user_id',
         )
 
         read_only_fields = (
@@ -175,7 +178,9 @@ class AssignedPupilSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssignedPupil
         fields = ['assign_id', 'class_id', 'user_id']
-
+        read_only_fields = (
+            'assign_id',
+        )
 
 
 class GradeSerializer(serializers.ModelSerializer):

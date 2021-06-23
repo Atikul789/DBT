@@ -56,7 +56,7 @@ class AssignedPupil(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.assign_id
+        return str(self.assign_id)
 
 
 class Grade(models.Model):
@@ -66,6 +66,6 @@ class Grade(models.Model):
     mark = models.FloatField(blank=False, null=True)
 
     def __str__(self):
-        return self.grade_id
+        return str(self.grade_id)
 
     # query on test table and by the subject id and returns test list.  api  and csv import

@@ -2,7 +2,7 @@ import csv
 import io
 from django.shortcuts import redirect
 from rest_framework import generics
-from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 from .models import User
 from django.http import HttpResponse
 from .serializers import *
@@ -113,7 +113,6 @@ class UserDestroy(APIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-
     def delete(self, request, pk):
         user_instance = User.objects.get(user_id=pk)
         if str(user_instance.user_type) == "teacher":
@@ -171,6 +170,13 @@ class ClassDestroy(APIView):
 class SubjectCreate(CreateAPIView):
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
+
+
+class SubjectListByUserId(APIView):
+    def get(self, request, pk):
+        subjectlist = Subject.objects.filter(user_id=pk)
+        serializer = SubjectSerializer(subjectlist, many=True)
+        return Response(serializer.data)
 
 
 class SubjectList(ListAPIView):
@@ -290,17 +296,16 @@ class TestsandGradesBySubjectId(APIView):
 
 
 class AssignedPupilUpdate(APIView):
-    queryset = AssignedPupil.objects.all()
-    serializer_class = AssignedPupilSerializer
 
-    def put(self, request, pk):
-        assignpupil = AssignedPupil.objects.get(user_id = pk)
-        serializer = AssignedPupilSerializer(assignpupil, data=request.data)
+    def patch(self, request, pk, format=None):
+        assignpupil = AssignedPupil.objects.get(user_id=pk)
+        serializer = AssignedPupilSerializer(assignpupil,
+                                             data=request.data,
+                                             partial=True)  # set partial=True to update a data partially
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class AssignedPupilDestroy(DestroyAPIView):

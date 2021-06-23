@@ -41,6 +41,7 @@ urlpatterns = [
     path('assigned-subject-and-grade-by-user-id/<int:pk>', AssignedSubjectsAndGradesByUserId.as_view(), ),
     path('test-and-grade-by-subject-id/user_id/<int:user_id>/subject_id/<int:subject_id>/',
          TestsandGradesBySubjectId.as_view()),
+    path('subject-list-by-user-id/<int:pk>/',SubjectListByUserId.as_view(),),
     path('home', HomePageView.as_view(), name='home'),
 
 ]
