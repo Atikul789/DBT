@@ -175,9 +175,7 @@ class AssignedPupilSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssignedPupil
         fields = ['assign_id', 'class_id', 'user_id']
-        read_only_fields = (
-            'assign_id',
-        )
+
 
 
 class GradeSerializer(serializers.ModelSerializer):

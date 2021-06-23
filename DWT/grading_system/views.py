@@ -113,6 +113,7 @@ class UserDestroy(APIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+
     def delete(self, request, pk):
         user_instance = User.objects.get(user_id=pk)
         if str(user_instance.user_type) == "teacher":
@@ -288,9 +289,18 @@ class TestsandGradesBySubjectId(APIView):
         return Response(json.dumps(dicts))
 
 
-class AssignedPupilUpdate(UpdateAPIView):
+class AssignedPupilUpdate(APIView):
     queryset = AssignedPupil.objects.all()
     serializer_class = AssignedPupilSerializer
+
+    def put(self, request, pk):
+        assignpupil = AssignedPupil.objects.get(user_id = pk)
+        serializer = AssignedPupilSerializer(assignpupil, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class AssignedPupilDestroy(DestroyAPIView):
