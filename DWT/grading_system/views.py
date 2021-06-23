@@ -19,6 +19,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.views import View
 from django.core import serializers
+import json
 
 user = None
 
@@ -223,9 +224,18 @@ class TestUpdate(UpdateAPIView):
     serializer_class = TestSerializer
 
 
-class TestDestroy(DestroyAPIView):
+class TestDestroy(APIView):
     queryset = Test.objects.all()
     serializer_class = TestSerializer
+
+    def delete(self, request, pk):
+        grades = Grade.objects.filter(test_id=pk)
+        if grades:
+            for grade in grades:
+                grade.delete()
+        test = Test.objects.get(test_id=pk)
+        test.delete()
+        return Response({"Success": "Test successfully deleted"})
 
 
 class AssignedPupilCreate(CreateAPIView):
@@ -236,6 +246,46 @@ class AssignedPupilCreate(CreateAPIView):
 class AssignedPupilList(ListAPIView):
     queryset = AssignedPupil.objects.all()
     serializer_class = AssignedPupilSerializer
+
+
+class AssignedSubjectsAndGradesByUserId(APIView):
+
+    def get(self, request, pk):
+        clas = AssignedPupil.objects.get(user_id=pk)
+        subjects = Subject.objects.filter(subject_id=clas.subject_id)
+        dicts = {}
+        count = 0
+        for subject in subjects:
+            tests = Test.objects.filter(subject_id=subject.subject_id, user_id=pk)
+            totalMarks = 0
+            for test in tests:
+                grade = Grade.objects.get(test_id=test.test_id)
+                totalMarks += grade.mark
+            avgGrade = totalMarks / len(tests)
+            # subjectid, subject name and avg grade
+            dictionary = {"subject_id": subject.subject_id, "subject_name": subject.subject_name,
+                          "average_grade": avgGrade}
+            dicts.update({count: dictionary})
+            count = count + 1
+        return Response(json.dumps(dicts))
+
+
+# hours = request.GET.get('hours', '')
+class TestsandGradesBySubjectId(APIView):
+    def get(self, request, *args, **kwargs):
+        subject_id = kwargs.get('subject_id', None)
+        user_id = kwargs.get('user_id', None)
+        print(subject_id)
+        tests = Test.objects.filter(subject_id=subject_id, user_id=user_id)
+        dicts = {}
+        count = 0
+        for test in tests:
+            grade = Grade.objects.get(test_id=test.test_id)
+            dictionary = {"test_id": test.test_id, "test_date": test.date, "grade_marks": grade.mark}
+            # test id, test name,  test date, grade marks """
+            dicts.update({count: dictionary})
+            count = count + 1
+        return Response(json.dumps(dicts))
 
 
 class AssignedPupilUpdate(UpdateAPIView):
@@ -268,7 +318,7 @@ class GradeList(ListAPIView):
     serializer_class = GradeSerializer
 
 
-class GradeListByPupilId(APIView): # need to add the url
+class GradeListByPupilId(APIView):  # need to add the url
     queryset = Grade.objects.all()
     serializer_class = GradeSerializer
 
@@ -277,7 +327,8 @@ class GradeListByPupilId(APIView): # need to add the url
         serializer = GradeSerializer(grades, many=True)
         return Response(serializer.data)
 
-class GradeListByTestId(APIView): # need to add the url
+
+class GradeListByTestId(APIView):  # need to add the url
     queryset = Grade.objects.all()
     serializer_class = GradeSerializer
 
@@ -286,12 +337,15 @@ class GradeListByTestId(APIView): # need to add the url
         serializer = GradeSerializer(grades, many=True)
         return Response(serializer.data)
 
-class GradeListByUserIdAndTestId(APIView): # send two pk and add the url
+
+class GradeListByUserIdAndTestId(APIView):  # send two pk and add the url
     queryset = Grade.objects.all()
     serializer_class = GradeSerializer
 
-    def get(self, request, user_id,test_id):
-        grades = Grade.objects.all(test_id=test_id, user_id=user_id )
+    def get(self, request, *args, **kwargs):
+        user_id = kwargs.get('user_id', None)
+        test_id = kwargs.get('test_id', None)
+        grades = Grade.objects.all(test_id=test_id, user_id=user_id)
         serializer = GradeSerializer(grades, many=True)
         return Response(serializer.data)
 

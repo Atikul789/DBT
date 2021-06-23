@@ -121,13 +121,19 @@ class UserLogoutSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'last_name']
+        fields = ['user_id', 'username', 'email', 'first_name', 'last_name']
+        read_only_fields = (
+            'user_id',
+        )
 
 
 class UserSerializerWithType(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['user_id','username', 'email', 'first_name', 'last_name', 'user_type']
+        fields = ['user_id', 'username', 'email', 'first_name', 'last_name', 'user_type']
+        read_only_fields = (
+            'user_id',
+        )
 
 
 class ClassSerializer(serializers.ModelSerializer):
@@ -138,7 +144,10 @@ class ClassSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Class
-        fields = ['class_id','class_name']
+        fields = ['class_id', 'class_name']
+        read_only_fields = (
+            'class_id',
+        )
 
 
 class SubjectSerializer(serializers.ModelSerializer):
@@ -147,25 +156,37 @@ class SubjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Subject
-        fields = ['subject_id','subject_name', 'user_id', 'class_id', 'is_archieved']
+        fields = ['subject_id', 'subject_name', 'user_id', 'class_id', 'is_archieved']
+        read_only_fields = (
+            'subject_id',
+        )
 
 
 class TestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Test
-        fields = ['test_name', 'subject_id', 'user_id']
+        fields = ['test_id', 'test_name', 'subject_id', 'user_id']
+        read_only_fields = (
+            'test_id',
+        )
 
 
 class AssignedPupilSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssignedPupil
-        fields = ['class_id', 'user_id']
+        fields = ['assign_id', 'class_id', 'user_id']
+        read_only_fields = (
+            'assign_id',
+        )
 
 
 class GradeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Grade
-        fields = ['test_id', 'user_id', 'mark']
+        fields = ['grade_id', 'test_id', 'user_id', 'mark']
+        read_only_fields = (
+            'grade_id',
+        )
 
 
 class FileUploadSerializer(serializers.Serializer):
