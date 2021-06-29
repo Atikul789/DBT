@@ -20,7 +20,7 @@ urlpatterns = [
     path('delete-subject/<int:pk>/', SubjectDestroy.as_view(), name="delete-subject"),
     path('archive-subject/<int:pk>/', ArchiveSubject.as_view(), name="archive-subject"),
     path('add-test/', TestCreate.as_view(), name="add-test"),
-    path('test-list/', TestList.as_view(), name="test-list"),
+    path('test-list/<int:pk>/', TestList.as_view(), name="test-list"),
     path('update-test/<int:pk>/', TestUpdate.as_view(), name="update-test"),
     path('delete-test/<int:pk>/', TestDestroy.as_view(), name="delete-test"),
     path('add-assignedpupil/', AssignedPupilCreate.as_view(), name="add-assignedpupil"),
@@ -41,7 +41,9 @@ urlpatterns = [
     path('assigned-subject-and-grade-by-user-id/<int:pk>', AssignedSubjectsAndGradesByUserId.as_view(), ),
     path('test-and-grade-by-subject-id/user_id/<int:user_id>/subject_id/<int:subject_id>/',
          TestsandGradesBySubjectId.as_view()),
-    path('subject-list-by-user-id/<int:pk>/',SubjectListByUserId.as_view(),),
+    path('subject-list-by-user-id/<int:pk>/', SubjectListByUserId.as_view(), ),
+    path('subject-list-by-student-id/<int:pk>/', SubjectListByStudentId.as_view()),
+    path('user-list-by-subject-id/<int:pk>/', UserListBySubjectId.as_view()),
     path('home', HomePageView.as_view(), name='home'),
 
 ]
