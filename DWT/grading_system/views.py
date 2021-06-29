@@ -27,9 +27,7 @@ user = None
 def archive_subject(subject_id):
     tests = Test.objects.filter(subject_id=subject_id)
     if tests:
-        subject = Subject.objects.get(subject_id=subject_id)
-        subject.is_archieved = True
-        subject.save()
+        subject = Subject.objects.filter(subject_id=subject_id).update(is_archieved=True)
         return True
     return False
 
@@ -58,7 +56,6 @@ class UserCreate(APIView):
 
 
 class UserLogin(APIView):
-    # get method handler
     queryset = User.objects.all()
     serializer_class = UserLoginSerializer
 
@@ -127,6 +124,14 @@ class UserDestroy(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
+class UserListBySubjectId(APIView):
+    def get(self, request, pk):
+        subject = Subject.objects.get(subject_id=pk)
+        assign_pupils = AssignedPupil.objects.filter(class_id=subject.class_id)
+        serializer = AssignedPupilSerializer(assign_pupils, many=True)
+        return Response(serializer.data)
+
+
 class ClassCreate(CreateAPIView):
     queryset = Class.objects.all()
     serializer_class = ClassSerializer
@@ -179,6 +184,13 @@ class SubjectListByUserId(APIView):
         return Response(serializer.data)
 
 
+class SubjectListByStudentId(APIView):
+    def get(self, request, pk):
+        subjectlist = Subject.objects.filter(subject_id=pk)
+        serializer = SubjectSerializer(subjectlist, many=True)
+        return Response(serializer.data)
+
+
 class SubjectList(ListAPIView):
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
@@ -218,12 +230,14 @@ class TestCreate(CreateAPIView):
     serializer_class = TestSerializer
 
 
-class TestList(ListAPIView):
+class TestList(APIView):
 
     def get(self, request, pk):
         testlist = Test.objects.filter(subject_id=pk)
-        serializer = UserSerializer(testlist, many=True)
-        return Response(serializer.data)
+        if testlist:
+            serializer = TestSerializer(testlist, many=True)
+            return Response(serializer.data)
+        return Response({"Error": "Subject id not found"})
 
 
 class TestUpdate(UpdateAPIView):
@@ -245,9 +259,22 @@ class TestDestroy(APIView):
         return Response({"Success": "Test successfully deleted"})
 
 
-class AssignedPupilCreate(CreateAPIView):
+class AssignedPupilCreate(APIView):
     queryset = AssignedPupil.objects.filter()
     serializer_class = AssignedPupilSerializer
+
+    def post(self, request, format=None):
+        class_id = request.data.get('class_id', None)
+        user_id = request.data.get('user_id', None)
+        data = {'class_id': class_id, 'user_id': user_id, }
+        assignpupil = AssignedPupil.objects.filter(user_id=int(user_id)).update(class_id=int(class_id))
+        if assignpupil:
+            return Response(status=status.HTTP_201_CREATED)
+        serializer = AssignedPupilSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AssignedPupilList(ListAPIView):
@@ -282,7 +309,6 @@ class TestsandGradesBySubjectId(APIView):
     def get(self, request, *args, **kwargs):
         subject_id = kwargs.get('subject_id', None)
         user_id = kwargs.get('user_id', None)
-        print(subject_id)
         tests = Test.objects.filter(subject_id=subject_id, user_id=user_id)
         dicts = {}
         count = 0
@@ -338,7 +364,7 @@ class GradeListByPupilId(APIView):  # need to add the url
     serializer_class = GradeSerializer
 
     def get(self, request, pk):
-        grades = Grade.objects.all(user_id=pk)
+        grades = Grade.objects.filter(user_id=pk)
         serializer = GradeSerializer(grades, many=True)
         return Response(serializer.data)
 
@@ -348,7 +374,7 @@ class GradeListByTestId(APIView):  # need to add the url
     serializer_class = GradeSerializer
 
     def get(self, request, pk):
-        grades = Grade.objects.all(test_id=pk)
+        grades = Grade.objects.filter(test_id=pk)
         serializer = GradeSerializer(grades, many=True)
         return Response(serializer.data)
 
@@ -360,7 +386,7 @@ class GradeListByUserIdAndTestId(APIView):  # send two pk and add the url
     def get(self, request, *args, **kwargs):
         user_id = kwargs.get('user_id', None)
         test_id = kwargs.get('test_id', None)
-        grades = Grade.objects.all(test_id=test_id, user_id=user_id)
+        grades = Grade.objects.filter(test_id=test_id, user_id=user_id)
         serializer = GradeSerializer(grades, many=True)
         return Response(serializer.data)
 
